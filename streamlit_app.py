@@ -268,3 +268,4 @@ if audio_bytes is not None:
 
         st.pyplot(fig)
         plt.close(fig)
+

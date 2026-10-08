@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocalis - Speech Delivery & Dynamics Analyzer</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%200%22%20100%22%20100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
+</head>
+  <canvas id="ambient-waves-canvas" class="ambient-waves-canvas"></canvas>
+  <div class="ambient-glow"></div>
+
+  <header>
+    <a href="#" onclick="return false;" class="logo">
+      <div class="live-logo-box">
+        <canvas id="logo-live-canvas" width="42" height="42"></canvas>
+      </div>
+      <div class="logo-info">
+        <span class="logo-text">Vocalis</span>
+        <div class="live-tag">
+          <span class="live-beacon"></span>
+          <span>LIVE</span>
+        </div>
+      </div>
+    </a>
+    <div class="header-actions">
+      <span class="badge">Acoustic Prosody Engine • v2.0</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-chip">
+        <span class="hero-chip-dot"></span>
+        Interactive Speech Delivery Science
+      </div>
+      <h1>Objective Vocal Presence Analysis</h1>
+      <p>Measure speaking pace, articulation speed, pause architecture, pitch contours, and volume dynamics in real time directly from your spoken audio.</p>
+    </section>
+
+    <div class="grid-layout">
+      <!-- Input Column -->
+      <div class="input-column">
+        <div class="card">
+          <div class="tabs">
+            <button class="tab-btn active" id="tab-record-btn" onclick="switchTab('record')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+              Record Mic
+            </button>
+            <button class="tab-btn" id="tab-upload-btn" onclick="switchTab('upload')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Upload Audio
+            </button>
+          </div>
+
+          <!-- Tab 1: Live Recording -->
+          <div class="tab-panel active" id="panel-record">
+            <div class="recorder-box">
+              <button class="record-btn" id="record-toggle-btn" title="Click to start recording">
+                <svg id="mic-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+                <svg id="stop-icon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                  <rect x="6" y="6" width="12" height="12" rx="2" />
+                </svg>
+              </button>
+              <div class="record-timer" id="record-timer">00:00</div>
+              <div class="record-status" id="record-status">Click mic to start recording speech</div>
+              <canvas class="visualizer-canvas" id="live-visualizer"></canvas>
+            </div>
+            <button class="btn btn-primary" id="analyze-recorded-btn" disabled>
+              Analyze Speech Recording
+            </button>
+          </div>
+
+          <!-- Tab 2: Upload File -->
+          <div class="tab-panel" id="panel-upload">
+            <div class="dropzone" id="dropzone">
+              <input type="file" id="audio-file-input" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac" style="display: none;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                <path d="M12 12v9"/>
+                <path d="m16 16-4-4-4 4"/>
+              </svg>
+              <p>Drag and drop audio file here</p>
+              <span>Supports WAV, MP3, M4A, OGG, FLAC</span>
+              <div class="file-selected" id="file-selected-info"></div>
+            </div>
+            <button class="btn btn-primary" id="analyze-upload-btn" disabled>
+              Analyze Audio File
+            </button>
+          </div>
+
+          <!-- Demo Button -->
+          <button class="btn btn-ghost" id="try-sample-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Try Demo Audio Sample
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Column -->
+      <div class="results-column">
+        <div class="card results-container" id="results-card">
+          <!-- Empty State -->
+          <div class="empty-state" id="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 10v3"/>
+              <path d="M6 6v11"/>
+              <path d="M10 3v18"/>
+              <path d="M14 8v7"/>
+              <path d="M18 5v13"/>
+              <path d="M22 10v3"/>
+            </svg>
+            <h3>Ready for Speech Input</h3>
+            <p>Record your voice or upload an audio file to view your speech delivery scorecard, acoustic timeline, and dynamic style.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div class="empty-state" id="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <h3 style="margin-top: 1rem;">Analyzing Acoustic Prosody...</h3>
+            <p>Calculating syllable peaks, pause intervals, pitch variance, and energy dynamics.</p>
+          </div>
+
+          <!-- Content Results (Hidden initially) -->
+          <div id="results-content" style="display: none; display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Output ASCII Card -->
+            <div class="ascii-card-box">
+              <div class="ascii-header">
+                <span class="ascii-title">Summary Scorecard</span>
+                <button class="copy-btn" id="copy-card-btn" onclick="copyCardText()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span id="copy-btn-text">Copy Card</span>
+                </button>
+              </div>
+              <pre class="ascii-content" id="ascii-card-text"></pre>
+            </div>
+
+            <!-- Style & Coaching Card -->
+            <div class="coach-card">
+              <div class="coach-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Delivery Assessment
+              </div>
+              <div class="coach-style-badge" id="coach-style-badge">Fast / expressive speech</div>
+              <p class="coach-text" id="coach-style-desc"></p>
+            </div>
+
+            <!-- Metrics Breakdown Grid -->
+            <div class="metrics-row">
+              <div class="metric-pill">
+                <span class="metric-label">Speaking Rate</span>
+                <div class="metric-value">
+                  <span id="m-speaking-rate">0.0</span>
+                  <span class="metric-unit">syl/s</span>
+                </div>
+                <span class="metric-status status-optimal" id="m-speaking-rate-status">Target: 3.5 - 4.5</span>
+              </div>
+
+              <div class="metric-pill">
+                <span class="metric-label">Articulation Rate</span>
+                <div class="metric-value">
+                  <span id="m-articulation-rate">0.0</span>
+                  <span class="metric-unit">syl/s</span>
+                </div>
+                <span class="metric-status status-moderate">Excluding pauses</span>
+              </div>
+
+              <div class="metric-pill">
+                <span class="metric-label">Pause Ratio</span>
+                <div class="metric-value">
+                  <span id="m-pause-ratio">0%</span>
+                </div>
+                <span class="metric-status" id="m-pause-ratio-status">Target: 15 - 25%</span>
+              </div>
+
+              <div class="metric-pill">
+                <span class="metric-label">Avg Pause Duration</span>
+                <div class="metric-value">
+                  <span id="m-avg-pause">0</span>
+                  <span class="metric-unit">ms</span>
+                </div>
+                <span class="metric-status status-optimal">Threshold: &gt;250ms</span>
+              </div>
+
+              <div class="metric-pill">
+                <span class="metric-label">Pitch Variation</span>
+                <div class="metric-value">
+                  <span id="m-pitch-label">--</span>
+                </div>
+                <span class="metric-status" id="m-pitch-sd">±0.0 semitones SD</span>
+              </div>
+
+              <div class="metric-pill">
+                <span class="metric-label">Energy Dynamics</span>
+                <div class="metric-value">
+                  <span id="m-energy-label">--</span>
+                </div>
+                <span class="metric-status" id="m-energy-sd">±0.0 dB SD</span>
+              </div>
+            </div>
+
+            <!-- Timeline & Visual Waveform -->
+            <div class="timeline-card">
+              <div class="timeline-header">
+                <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff;">Acoustic Timeline</h4>
+                <div class="timeline-legend">
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background: #3b82f6;"></span> Waveform
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background: #ef4444;"></span> Pauses (&ge;250ms)
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background: #10b981;"></span> Syllables
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background: #f59e0b;"></span> Pitch (F0)
+                  </div>
+                </div>
+              </div>
+
+              <canvas class="timeline-canvas" id="timeline-canvas"></canvas>
+
+              <div class="audio-player-container">
+                <audio id="audio-player" controls></audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Vocalis • Acoustic Speech Dynamics Engine • Built with NumPy, SciPy & Librosa</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
+
